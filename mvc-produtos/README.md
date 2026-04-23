@@ -46,40 +46,6 @@ Para desenvolvimento com hot-reload:
 npm run dev   # usa nodemon
 ```
 
-## Como publicar no GitHub
-
-### Pré-requisitos
-- [Git](https://git-scm.com/) instalado
-- Conta no [GitHub](https://github.com)
-- [GitHub CLI](https://cli.github.com/) (opcional, mas recomendado)
-
-### Passo a passo
-
-```bash
-# 1. Inicializar o repositório Git na pasta do projeto
-git init
-
-# 2. Criar o .gitignore para não versionar node_modules
-echo "node_modules/" > .gitignore
-echo ".env" >> .gitignore
-
-# 3. Adicionar todos os arquivos ao stage
-git add .
-
-# 4. Fazer o primeiro commit
-git commit -m "feat: exemplo prático padrão MVC com Node.js"
-
-# 5a. COM GitHub CLI (mais fácil):
-gh repo create mvc-produtos --public --push --source=.
-
-# 5b. SEM GitHub CLI (manual):
-#   - Acesse github.com → New repository → nome: mvc-produtos
-#   - Copie a URL do repositório criado e execute:
-git remote add origin https://github.com/SEU_USUARIO/mvc-produtos.git
-git branch -M main
-git push -u origin main
-```
-
 ## Fluxo de uma requisição (exemplo: cadastrar produto)
 
 ```
