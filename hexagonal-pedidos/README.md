@@ -69,25 +69,6 @@ npm start
 # http://localhost:3000
 ```
 
-## Como publicar no GitHub
-
-```bash
-# Na pasta do projeto:
-git init
-echo "node_modules/" > .gitignore
-echo "data/" >> .gitignore
-git add .
-git commit -m "feat: exemplo arquitetura hexagonal (Ports and Adapters)"
-
-# Com GitHub CLI:
-gh repo create hexagonal-pedidos --public --push --source=.
-
-# Sem GitHub CLI:
-git remote add origin https://github.com/SEU_USUARIO/hexagonal-pedidos.git
-git branch -M main
-git push -u origin main
-```
-
 ## Diferença em relação ao MVC
 
 | Aspecto | MVC | Hexagonal |
