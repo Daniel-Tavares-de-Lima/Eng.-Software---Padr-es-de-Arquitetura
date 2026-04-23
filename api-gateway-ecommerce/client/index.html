@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>API Gateway — Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #07090f;
+      --surface:  #0f1623;
+      --border:   #1e2d45;
+      --text:     #cdd6e8;
+      --muted:    #4a5a72;
+      --gateway:  #3b82f6;
+      --user:     #8b5cf6;
+      --catalog:  #10b981;
+      --payment:  #f59e0b;
+      --error:    #ef4444;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+    }
+
+    header h1 { font-size: 1rem; font-weight: 700; color: #f1f5f9; letter-spacing: 0.3px; }
+    header .tag {
+      font-size: 0.7rem;
+      background: var(--gateway);
+      color: #fff;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ── Diagrama de arquitetura ─────────────────── */
+    .arch-diagram {
+      grid-column: 1 / -1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+
+    .arch-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      min-width: 90px;
+    }
+
+    .arch-icon {
+      width: 52px; height: 52px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      border: 2px solid;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .arch-icon.pulse {
+      animation: pulse 0.5s ease;
+    }
+    @keyframes pulse {
+      0%  { transform: scale(1); }
+      50% { transform: scale(1.15); box-shadow: 0 0 16px currentColor; }
+      100%{ transform: scale(1); }
+    }
+
+    .arch-client  .arch-icon { background: #1e2d4520; border-color: var(--text);    color: var(--text); }
+    .arch-gateway .arch-icon { background: #3b82f620; border-color: var(--gateway); color: var(--gateway); }
+    .arch-user    .arch-icon { background: #8b5cf620; border-color: var(--user);    color: var(--user); }
+    .arch-catalog .arch-icon { background: #10b98120; border-color: var(--catalog); color: var(--catalog); }
+    .arch-payment .arch-icon { background: #f59e0b20; border-color: var(--payment); color: var(--payment); }
+
+    .arch-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: center;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .arch-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0.5rem;
+      color: var(--border);
+      font-size: 1.1rem;
+      margin-bottom: 1.2rem;
+    }
+    .arch-arrow.active { color: var(--gateway); }
+
+    .arch-services {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .arch-pipe {
+      width: 2px;
+      height: 12px;
+      background: var(--border);
+      margin: 0 auto;
+    }
+    .arch-pipe.active { background: var(--gateway); }
+
+    /* ── Painel de chamadas ──────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+    }
+
+    .btn-group { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .btn {
+      padding: 0.65rem 1rem;
+      border-radius: 7px;
+      border: 1px solid;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      text-align: left;
+      transition: all 0.18s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn:hover { filter: brightness(1.2); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-gateway  { background: #3b82f610; border-color: var(--gateway); color: var(--gateway); }
+    .btn-user     { background: #8b5cf610; border-color: var(--user);    color: var(--user); }
+    .btn-catalog  { background: #10b98110; border-color: var(--catalog); color: var(--catalog); }
+    .btn-payment  { background: #f59e0b10; border-color: var(--payment); color: var(--payment); }
+
+    .btn-badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .btn-gateway  .btn-badge { background: var(--gateway); color: #fff; }
+    .btn-user     .btn-badge { background: var(--user);    color: #fff; }
+    .btn-catalog  .btn-badge { background: var(--catalog); color: #fff; }
+    .btn-payment  .btn-badge { background: var(--payment); color: #000; }
+
+    /* ── Resposta ────────────────────────────────── */
+    .response-panel { grid-column: 1 / -1; }
+
+    .response-meta {
+      padding: 0.875rem 1.25rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      font-size: 0.78rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.7rem;
+    }
+    .status-ok  { background: #10b98120; color: #10b981; border: 1px solid #10b981; }
+    .status-err { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
+
+    pre {
+      padding: 1.25rem;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      color: #a8c4e0;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .empty-state {
+      padding: 3rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid var(--border);
+      border-top-color: var(--gateway);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .auth-notice {
+      padding: 0.75rem 1.25rem;
+      background: #3b82f608;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .auth-notice code {
+      color: var(--gateway);
+      background: #3b82f615;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌐 API Gateway — Padrão Arquitetural</h1>
+    <span class="tag">DEMO</span>
+  </header>
+
+  <div class="layout">
+
+    <!-- Diagrama -->
+    <div class="arch-diagram">
+      <div class="arch-box arch-client">
+        <div class="arch-icon" id="icon-client">📱</div>
+        <div class="arch-label">Cliente<br/>Mobile</div>
+      </div>
+
+      <div class="arch-arrow" id="arrow-in">⟶</div>
+
+      <div class="arch-box arch-gateway">
+        <div class="arch-icon" id="icon-gateway">🌐</div>
+        <div class="arch-label">API<br/>Gateway<br/><span style="color:var(--gateway)">:3000</span></div>
+      </div>
+
+      <div class="arch-arrow" id="arrow-out">⟶</div>
+
+      <div class="arch-services">
+        <div class="arch-box arch-user">
+          <div class="arch-icon" id="icon-user">👤</div>
+          <div class="arch-label">User<br/>:3001</div>
+        </div>
+        <div class="arch-box arch-catalog">
+          <div class="arch-icon" id="icon-catalog">📦</div>
+          <div class="arch-label">Catalog<br/>:3002</div>
+        </div>
+        <div class="arch-box arch-payment">
+          <div class="arch-icon" id="icon-payment">💳</div>
+          <div class="arch-label">Payment<br/>:3003</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chamadas -->
+    <div class="panel">
+      <div class="panel-header">Chamadas via Gateway</div>
+      <div class="auth-notice">
+        Header obrigatório: <code>X-API-Key: demo-key-123</code>
+      </div>
+      <div class="btn-group">
+
+        <button class="btn btn-gateway" onclick="call('GET', '/api/status', null, 'gateway')">
+          <span>GET /api/status <small style="opacity:.6">— health check</small></span>
+          <span class="btn-badge">gateway</span>
+        </button>
+
+        <button class="btn btn-gateway" onclick="call('GET', '/api/dashboard/1', null, 'gateway')">
+          <span>GET /api/dashboard/1 <small style="opacity:.6">— AGREGAÇÃO ×3</small></span>
+          <span class="btn-badge">agregar</span>
+        </button>
+
+        <button class="btn btn-user" onclick="call('GET', '/api/users', null, 'user')">
+          <span>GET /api/users</span>
+          <span class="btn-badge">user svc</span>
+        </button>
+
+        <button class="btn btn-user" onclick="call('GET', '/api/users/2', null, 'user')">
+          <span>GET /api/users/2</span>
+          <span class="btn-badge">user svc</span>
+        </button>
+
+        <button class="btn btn-catalog" onclick="call('GET', '/api/products', null, 'catalog')">
+          <span>GET /api/products</span>
+          <span class="btn-badge">catalog svc</span>
+        </button>
+
+        <button class="btn btn-payment" onclick="call('GET', '/api/payments/history/1', null, 'payment')">
+          <span>GET /api/payments/history/1</span>
+          <span class="btn-badge">payment svc</span>
+        </button>
+
+        <button class="btn btn-payment" onclick="testPayment()">
+          <span>POST /api/payments <small style="opacity:.6">— processar pedido</small></span>
+          <span class="btn-badge">payment svc</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Rate limit test -->
+    <div class="panel">
+      <div class="panel-header">Testes de Segurança</div>
+      <div class="btn-group" style="gap:0.75rem;">
+        <p style="font-size:0.78rem;color:var(--muted);padding:0 0 0.25rem;">
+          Teste os middlewares de autenticação e rate limiting do Gateway.
+        </p>
+
+        <button class="btn btn-gateway" onclick="callNoAuth()">
+          <span>Chamada SEM X-API-Key <small style="opacity:.6">→ 401</small></span>
+          <span class="btn-badge">auth</span>
+        </button>
+
+        <button class="btn btn-gateway" onclick="callWrongKey()">
+          <span>Chamada com chave inválida <small style="opacity:.6">→ 403</small></span>
+          <span class="btn-badge">auth</span>
+        </button>
+
+        <button class="btn btn-gateway" onclick="testRateLimit()">
+          <span>Disparar 25 requisições rápidas <small style="opacity:.6">→ 429</small></span>
+          <span class="btn-badge">rate</span>
+        </button>
+
+        <div style="padding:0.75rem;background:#10b98108;border:1px solid #10b98130;border-radius:7px;font-size:0.75rem;color:var(--muted);margin-top:0.25rem;">
+          <strong style="color:#10b981;">Middleware aplicado no Gateway:</strong><br/>
+          Auth → os serviços nunca recebem requisições não autenticadas.<br/>
+          Rate Limit → 20 req/min. Serviços ficam protegidos de sobrecarga.
+        </div>
+      </div>
+    </div>
+
+    <!-- Resposta -->
+    <div class="panel response-panel">
+      <div class="panel-header">Resposta do Gateway</div>
+      <div id="response-meta" class="response-meta" style="display:none"></div>
+      <div id="response-body">
+        <div class="empty-state">
+          Clique em um endpoint acima para ver a resposta do Gateway.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_KEY = "demo-key-123";
+
+    function highlight(icons) {
+      ["client","gateway","user","catalog","payment"].forEach(id => {
+        document.getElementById(`icon-${id}`)?.classList.remove("pulse");
+      });
+      icons.forEach(id => {
+        setTimeout(() => document.getElementById(`icon-${id}`)?.classList.add("pulse"), 50);
+      });
+    }
+
+    async function call(method, url, body, serviceHint) {
+      const metaEl = document.getElementById("response-meta");
+      const bodyEl = document.getElementById("response-body");
+
+      bodyEl.innerHTML = `<div class="empty-state"><span class="spinner"></span> Aguardando resposta do Gateway...</div>`;
+      metaEl.style.display = "none";
+
+      const iconsMap = {
+        gateway: ["client","gateway"],
+        user:    ["client","gateway","user"],
+        catalog: ["client","gateway","catalog"],
+        payment: ["client","gateway","payment"],
+      };
+      highlight(iconsMap[serviceHint] || ["client","gateway"]);
+      if (serviceHint === "gateway" && url.includes("dashboard")) {
+        setTimeout(() => highlight(["client","gateway","user","catalog","payment"]), 200);
+      }
+
+      const start = Date.now();
+      let status, data;
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": API_KEY,
+          },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+
+        status = res.status;
+        data = await res.json();
+      } catch (err) {
+        status = 0;
+        data = { erro: "Falha de rede. O Gateway está rodando?" };
+      }
+
+      const elapsed = Date.now() - start;
+
+      metaEl.style.display = "flex";
+      metaEl.innerHTML = `
+        <span class="meta-pill ${status >= 200 && status < 300 ? 'status-ok' : 'status-err'}">${status || 'ERR'}</span>
+        <span style="color:var(--muted)">${method} ${url}</span>
+        <span style="margin-left:auto;color:var(--muted);font-size:0.72rem;">${elapsed}ms</span>
+      `;
+
+      bodyEl.innerHTML = `<pre>${syntaxHighlight(JSON.stringify(data, null, 2))}</pre>`;
+    }
+
+    function callNoAuth() {
+      document.getElementById("response-body").innerHTML =
+        `<div class="empty-state"><span class="spinner"></span></div>`;
+      document.getElementById("response-meta").style.display = "none";
+
+      fetch("/api/users", { headers: {} })
+        .then(r => r.json().then(d => ({ s: r.status, d })))
+        .then(({ s, d }) => {
+          const metaEl = document.getElementById("response-meta");
+          metaEl.style.display = "flex";
+          metaEl.innerHTML = `<span class="meta-pill status-err">${s}</span><span style="color:var(--muted)">GET /api/users — sem X-API-Key</span>`;
+          document.getElementById("response-body").innerHTML =
+            `<pre>${syntaxHighlight(JSON.stringify(d, null, 2))}</pre>`;
+        });
+    }
+
+    function callWrongKey() {
+      fetch("/api/users", { headers: { "X-API-Key": "chave-errada" } })
+        .then(r => r.json().then(d => ({ s: r.status, d })))
+        .then(({ s, d }) => {
+          const metaEl = document.getElementById("response-meta");
+          metaEl.style.display = "flex";
+          metaEl.innerHTML = `<span class="meta-pill status-err">${s}</span><span style="color:var(--muted)">GET /api/users — chave inválida</span>`;
+          document.getElementById("response-body").innerHTML =
+            `<pre>${syntaxHighlight(JSON.stringify(d, null, 2))}</pre>`;
+        });
+    }
+
+    async function testRateLimit() {
+      document.getElementById("response-body").innerHTML =
+        `<div class="empty-state"><span class="spinner"></span> Disparando 25 requisições...</div>`;
+
+      const results = await Promise.all(
+        Array.from({ length: 25 }, (_, i) =>
+          fetch("/api/users", { headers: { "X-API-Key": API_KEY } })
+            .then(r => r.json().then(d => ({ req: i + 1, status: r.status, limited: r.status === 429 })))
+        )
+      );
+
+      const limited = results.filter(r => r.limited).length;
+      const ok = results.filter(r => r.status === 200).length;
+
+      const metaEl = document.getElementById("response-meta");
+      metaEl.style.display = "flex";
+      metaEl.innerHTML = `
+        <span class="meta-pill status-ok">${ok} OK</span>
+        <span class="meta-pill status-err">${limited} bloqueadas (429)</span>
+        <span style="color:var(--muted);margin-left:auto;font-size:0.72rem;">25 requisições simultâneas</span>
+      `;
+      document.getElementById("response-body").innerHTML =
+        `<pre>${syntaxHighlight(JSON.stringify(results.slice(-6), null, 2))}</pre>`;
+    }
+
+    function testPayment() {
+      call("POST", "/api/payments", { userId: 1, produtoId: 1, valor: 349.90 }, "payment");
+    }
+
+    function syntaxHighlight(json) {
+      return json
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (m) => {
+          let cls = "color:#a8c4e0";
+          if (/^"/.test(m)) cls = /:$/.test(m) ? "color:#60a5fa" : "color:#a3e0b8";
+          else if (/true|false/.test(m)) cls = "color:#f59e0b";
+          else if (/null/.test(m)) cls = "color:#ef4444";
+          else cls = "color:#f9a8d4";
+          return `<span style="${cls}">${m}</span>`;
+        });
+    }
+  </script>
+</body>
+</html>

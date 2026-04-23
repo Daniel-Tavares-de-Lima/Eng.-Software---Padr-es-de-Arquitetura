@@ -1,0 +1,17 @@
+{
+  "name": "api-gateway-ecommerce",
+  "version": "1.0.0",
+  "description": "Exemplo prático do padrão API Gateway com Node.js",
+  "scripts": {
+    "start": "concurrently --names \"GATEWAY,USER,CATALOG,PAYMENT\" --prefix-colors \"blue,magenta,green,yellow\" \"node gateway/app.js\" \"node services/user-service/app.js\" \"node services/catalog-service/app.js\" \"node services/payment-service/app.js\"",
+    "gateway": "node gateway/app.js",
+    "users":   "node services/user-service/app.js",
+    "catalog": "node services/catalog-service/app.js",
+    "payments":"node services/payment-service/app.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "concurrently": "^8.2.2",
+    "express": "^4.19.2"
+  }
+}
