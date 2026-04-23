@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= titulo %> — Hexagonal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 { font-size: 1.05rem; font-weight: 600; color: #f1f5f9; }
+
+    header nav a {
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.875rem;
+      margin-left: 1.5rem;
+      transition: color 0.2s;
+    }
+    header nav a:hover { color: #e2e8f0; }
+
+    .container {
+      max-width: 920px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Diagrama hexagonal no topo */
+    .hex-diagram {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 1.75rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.875rem 1.25rem;
+      font-size: 0.78rem;
+      color: #64748b;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .hex-box {
+      padding: 0.25rem 0.65rem;
+      border-radius: 5px;
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .hex-domain     { background: #1d4ed820; color: #60a5fa; border: 1px solid #1d4ed8; }
+    .hex-port-in    { background: #7c3aed20; color: #a78bfa; border: 1px solid #7c3aed; }
+    .hex-port-out   { background: #0e7490aa; color: #67e8f9; border: 1px solid #0e7490; }
+    .hex-adapter-in { background: #15803d20; color: #4ade80; border: 1px solid #15803d; }
+    .hex-adapter-out{ background: #92400e20; color: #fbbf24; border: 1px solid #92400e; }
+
+    .arrow { color: #475569; font-size: 0.85rem; }
+
+    .alert {
+      padding: 0.875rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+      font-size: 0.875rem;
+    }
+    .alert-success { background: #14532d40; color: #4ade80; border-left: 4px solid #22c55e; }
+    .alert-error   { background: #7f1d1d40; color: #f87171; border-left: 4px solid #ef4444; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⬡ Ports &amp; Adapters — Exemplo Prático</h1>
+    <nav>
+      <a href="/pedidos">Pedidos</a>
+      <a href="/pedidos/novo">+ Novo Pedido</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="hex-diagram">
+      <span class="hex-box hex-adapter-in">HTTP (Express)</span>
+      <span class="arrow">→</span>
+      <span class="hex-box hex-port-in">Porta de Entrada</span>
+      <span class="arrow">→</span>
+      <span class="hex-box hex-domain">Domínio</span>
+      <span class="arrow">→</span>
+      <span class="hex-box hex-port-out">Porta de Saída</span>
+      <span class="arrow">→</span>
+      <span class="hex-box hex-adapter-out">Repository</span>
+      <span style="margin-left:auto;font-size:0.72rem;">
+        Domínio isolado · Adaptadores intercambiáveis
+      </span>
+    </div>
+
+    <%- body %>
+  </div>
+</body>
+</html>

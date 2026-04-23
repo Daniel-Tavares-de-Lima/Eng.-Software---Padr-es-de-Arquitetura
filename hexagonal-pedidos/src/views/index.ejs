@@ -1,0 +1,155 @@
+<style>
+  h2 { font-size: 1.35rem; margin-bottom: 1.5rem; color: #f1f5f9; }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .pedido-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+  .pedido-card:hover { border-color: #475569; }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .pedido-id { font-size: 0.75rem; color: #475569; }
+  .pedido-cliente { font-weight: 600; font-size: 0.95rem; color: #f1f5f9; }
+
+  .status-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .status-pendente  { background: #92400e30; color: #fbbf24; border: 1px solid #92400e; }
+  .status-cancelado { background: #7f1d1d30; color: #f87171; border: 1px solid #7f1d1d; }
+
+  .itens-list {
+    list-style: none;
+    margin: 0.75rem 0;
+    font-size: 0.82rem;
+    color: #94a3b8;
+  }
+  .itens-list li { padding: 0.2rem 0; border-bottom: 1px solid #1e293b; }
+  .itens-list li:last-child { border-bottom: none; }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #334155;
+  }
+
+  .total { font-size: 1rem; font-weight: 700; color: #4ade80; }
+  .data  { font-size: 0.72rem; color: #475569; }
+
+  .btn-cancel {
+    background: none;
+    border: 1px solid #7f1d1d;
+    color: #f87171;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+  }
+  .btn-cancel:hover { background: #7f1d1d30; }
+  .btn-cancel:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn-novo {
+    display: inline-block;
+    background: #1d4ed8;
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    transition: background 0.2s;
+  }
+  .btn-novo:hover { background: #2563eb; }
+
+  .empty {
+    text-align: center;
+    padding: 3rem;
+    color: #475569;
+    background: #1e293b;
+    border: 1px dashed #334155;
+    border-radius: 10px;
+  }
+  .empty a { color: #60a5fa; text-decoration: none; }
+</style>
+
+<% if (mensagem) { %><div class="alert alert-success">✅ <%= mensagem %></div><% } %>
+<% if (erro) { %><div class="alert alert-error">❌ <%= erro %></div><% } %>
+
+<h2>📋 <%= titulo %> (<%= pedidos.length %>)</h2>
+<a href="/pedidos/novo" class="btn-novo">+ Novo Pedido</a>
+
+<% if (pedidos.length === 0) { %>
+  <div class="empty">
+    <p>Nenhum pedido ainda. <a href="/pedidos/novo">Crie o primeiro</a>.</p>
+  </div>
+<% } else { %>
+  <div class="card-grid">
+    <% pedidos.forEach(pedido => {
+      const total = pedido.itens.reduce((s, i) => s + i.quantidade * i.precoUnitario, 0);
+    %>
+      <div class="pedido-card">
+        <div class="card-header">
+          <div>
+            <div class="pedido-id">Pedido #<%= pedido.id %></div>
+            <div class="pedido-cliente"><%= pedido.cliente %></div>
+          </div>
+          <span class="status-badge status-<%= pedido.status %>">
+            <%= pedido.status %>
+          </span>
+        </div>
+
+        <ul class="itens-list">
+          <% pedido.itens.forEach(item => { %>
+            <li>
+              <%= item.produto %>
+              &times;<%= item.quantidade %>
+              <span style="float:right;">
+                R$ <%= (item.quantidade * item.precoUnitario).toFixed(2).replace('.', ',') %>
+              </span>
+            </li>
+          <% }) %>
+        </ul>
+
+        <div class="card-footer">
+          <div>
+            <div class="total">R$ <%= total.toFixed(2).replace('.', ',') %></div>
+            <div class="data"><%= pedido.criadoEm %></div>
+          </div>
+          <% if (pedido.status === 'pendente') { %>
+            <form method="POST" action="/pedidos/<%= pedido.id %>/cancelar"
+                  onsubmit="return confirm('Cancelar pedido #<%= pedido.id %>?')">
+              <button type="submit" class="btn-cancel">Cancelar</button>
+            </form>
+          <% } else { %>
+            <button class="btn-cancel" disabled>Cancelado</button>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>

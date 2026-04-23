@@ -1,0 +1,195 @@
+<style>
+  h2 { font-size: 1.35rem; margin-bottom: 0.4rem; color: #f1f5f9; }
+  .subtitle { color: #64748b; font-size: 0.875rem; margin-bottom: 1.75rem; }
+
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 580px;
+  }
+
+  .form-group { margin-bottom: 1.25rem; }
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #f1f5f9;
+    background: #0f172a;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+
+  .itens-section {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .itens-section h3 {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 0.875rem;
+  }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 0.5rem;
+    align-items: end;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-row label { font-size: 0.72rem; }
+
+  .btn-remove-item {
+    background: none;
+    border: 1px solid #7f1d1d;
+    color: #f87171;
+    padding: 0.65rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    align-self: flex-end;
+  }
+  .btn-remove-item:hover { background: #7f1d1d30; }
+
+  .btn-add-item {
+    background: none;
+    border: 1px dashed #334155;
+    color: #64748b;
+    padding: 0.5rem;
+    width: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    margin-top: 0.5rem;
+    transition: all 0.2s;
+  }
+  .btn-add-item:hover { border-color: #3b82f6; color: #60a5fa; }
+
+  .btn-submit {
+    width: 100%;
+    padding: 0.8rem;
+    background: #1d4ed8;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 0.5rem;
+  }
+  .btn-submit:hover { background: #2563eb; }
+
+  .btn-voltar {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #475569;
+    font-size: 0.82rem;
+    text-decoration: none;
+  }
+  .btn-voltar:hover { color: #94a3b8; }
+</style>
+
+<% if (erro) { %><div class="alert alert-error">❌ <%= erro %></div><% } %>
+
+<h2>🆕 <%= titulo %></h2>
+<p class="subtitle">O adaptador HTTP traduz este formulário para um caso de uso do domínio.</p>
+
+<div class="card">
+  <form method="POST" action="/pedidos" id="form-pedido">
+
+    <div class="form-group">
+      <label for="cliente">Cliente</label>
+      <input
+        type="text"
+        id="cliente"
+        name="cliente"
+        placeholder="Ex: João da Silva"
+        value="<%= locals.dados?.cliente || '' %>"
+        required
+      />
+    </div>
+
+    <div class="itens-section">
+      <h3>Itens do Pedido</h3>
+      <div id="itens-container">
+        <div class="item-row">
+          <div class="form-group" style="margin:0">
+            <label>Produto</label>
+            <input type="text" name="produtos" placeholder="Ex: Tênis Runner" required/>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Qtd</label>
+            <input type="number" name="quantidades" min="1" value="1" required/>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Preço unit.</label>
+            <input type="number" name="precos" min="0.01" step="0.01" placeholder="0,00" required/>
+          </div>
+          <button type="button" class="btn-remove-item" onclick="removerItem(this)" title="Remover">✕</button>
+        </div>
+      </div>
+      <button type="button" class="btn-add-item" onclick="adicionarItem()">+ Adicionar item</button>
+    </div>
+
+    <button type="submit" class="btn-submit">Criar Pedido</button>
+  </form>
+  <a href="/pedidos" class="btn-voltar">← Voltar</a>
+</div>
+
+<script>
+  function adicionarItem() {
+    const container = document.getElementById("itens-container");
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `
+      <div class="form-group" style="margin:0">
+        <label>Produto</label>
+        <input type="text" name="produtos" placeholder="Nome do produto" required/>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Qtd</label>
+        <input type="number" name="quantidades" min="1" value="1" required/>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Preço unit.</label>
+        <input type="number" name="precos" min="0.01" step="0.01" placeholder="0,00" required/>
+      </div>
+      <button type="button" class="btn-remove-item" onclick="removerItem(this)" title="Remover">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removerItem(btn) {
+    const rows = document.querySelectorAll(".item-row");
+    if (rows.length === 1) return; // manter ao menos 1
+    btn.closest(".item-row").remove();
+  }
+</script>
