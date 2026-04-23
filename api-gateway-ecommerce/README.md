@@ -65,23 +65,6 @@ npm start
 
 O `concurrently` inicializa o gateway e os três microsserviços em paralelo, com logs coloridos por serviço.
 
-## Como publicar no GitHub
-
-```bash
-git init
-echo "node_modules/" > .gitignore
-git add .
-git commit -m "feat: exemplo padrão API Gateway com Node.js"
-
-# Com GitHub CLI:
-gh repo create api-gateway-ecommerce --public --push --source=.
-
-# Sem GitHub CLI:
-git remote add origin https://github.com/SEU_USUARIO/api-gateway-ecommerce.git
-git branch -M main
-git push -u origin main
-```
-
 ## O que este padrão resolve
 
 Sem o Gateway, um app mobile precisaria:
