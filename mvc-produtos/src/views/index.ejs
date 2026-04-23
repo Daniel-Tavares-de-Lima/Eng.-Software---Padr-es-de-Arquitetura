@@ -1,0 +1,157 @@
+<!-- ============================================================
+     VIEW — Responsável apenas por exibir os dados.
+     Não faz lógica de negócio. Recebe dados prontos do Controller.
+     ============================================================ -->
+
+<style>
+  h2 { font-size: 1.4rem; margin-bottom: 1.5rem; color: #1e293b; }
+
+  .layer-info {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+    padding: 0.875rem 1.25rem;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.82rem;
+    color: #64748b;
+    align-items: center;
+  }
+
+  .tabela-wrapper {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    background: #f8fafc;
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  tbody td {
+    padding: 0.875rem 1rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #f8fafc; }
+
+  .preco { font-weight: 600; color: #15803d; }
+
+  .cat-badge {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+  }
+
+  .btn-delete {
+    background: none;
+    border: 1px solid #fca5a5;
+    color: #ef4444;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .btn-delete:hover { background: #fee2e2; }
+
+  .empty {
+    text-align: center;
+    padding: 3rem;
+    color: #94a3b8;
+  }
+  .empty a { color: #3b82f6; text-decoration: none; }
+
+  .btn-novo {
+    display: inline-block;
+    background: #1e293b;
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    transition: background 0.2s;
+  }
+  .btn-novo:hover { background: #334155; }
+</style>
+
+<% if (mensagem) { %>
+  <div class="alert alert-success">✅ <%= mensagem %></div>
+<% } %>
+<% if (erro) { %>
+  <div class="alert alert-error">❌ <%= erro %></div>
+<% } %>
+
+<div class="layer-info">
+  <span class="badge badge-layer-view">VIEW</span>
+  Este arquivo exibe os dados. Não sabe como foram buscados.
+  &nbsp;|&nbsp;
+  <span class="badge badge-layer-controller">CONTROLLER</span>
+  <code>ProdutoController.index()</code> buscou os dados e chamou esta view.
+  &nbsp;|&nbsp;
+  <span class="badge badge-layer-model">MODEL</span>
+  <code>ProdutoModel.listarTodos()</code> retornou os dados.
+</div>
+
+<h2>📦 <%= titulo %> (<%= produtos.length %> item<%= produtos.length !== 1 ? 's' : '' %>)</h2>
+
+<a href="/produtos/novo" class="btn-novo">+ Cadastrar Produto</a>
+
+<div class="tabela-wrapper">
+  <% if (produtos.length === 0) { %>
+    <div class="empty">
+      <p>Nenhum produto cadastrado ainda.</p>
+      <p><a href="/produtos/novo">Cadastre o primeiro</a></p>
+    </div>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th>Preço</th>
+          <th>Cadastrado em</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% produtos.forEach(produto => { %>
+          <tr>
+            <td style="color:#94a3b8;"><%= produto.id %></td>
+            <td><strong><%= produto.nome %></strong></td>
+            <td><span class="cat-badge"><%= produto.categoria %></span></td>
+            <td class="preco">R$ <%= produto.preco.toFixed(2).replace('.', ',') %></td>
+            <td style="color:#94a3b8;font-size:0.8rem;"><%= produto.criadoEm %></td>
+            <td>
+              <form method="POST" action="/produtos/<%= produto.id %>/deletar"
+                    onsubmit="return confirm('Remover este produto?')">
+                <button type="submit" class="btn-delete">Remover</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>

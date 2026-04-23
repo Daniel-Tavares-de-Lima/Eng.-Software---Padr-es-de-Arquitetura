@@ -1,0 +1,149 @@
+<!-- ============================================================
+     VIEW — Formulário de cadastro.
+     Só exibe a interface e envia dados ao Controller via POST.
+     ============================================================ -->
+
+<style>
+  h2 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .subtitle { color: #64748b; font-size: 0.875rem; margin-bottom: 1.75rem; }
+
+  .layer-info {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+    padding: 0.875rem 1.25rem;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.82rem;
+    color: #64748b;
+    align-items: center;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 520px;
+  }
+
+  .form-group { margin-bottom: 1.25rem; }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.4rem;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background: #f9fafb;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  input:focus, select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    background: #fff;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 0.75rem;
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 0.5rem;
+  }
+  .btn-submit:hover { background: #334155; }
+
+  .btn-voltar {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #64748b;
+    font-size: 0.85rem;
+    text-decoration: none;
+  }
+  .btn-voltar:hover { color: #1e293b; }
+</style>
+
+<% if (erro) { %>
+  <div class="alert alert-error">❌ <%= erro %></div>
+<% } %>
+
+<div class="layer-info">
+  <span class="badge badge-layer-view">VIEW</span>
+  Apenas coleta os dados e envia via POST.
+  &nbsp;|&nbsp;
+  <span class="badge badge-layer-controller">CONTROLLER</span>
+  <code>ProdutoController.criar()</code> vai receber o POST.
+  &nbsp;|&nbsp;
+  <span class="badge badge-layer-model">MODEL</span>
+  <code>ProdutoModel.criar()</code> vai validar e salvar.
+</div>
+
+<h2>🆕 <%= titulo %></h2>
+<p class="subtitle">Preencha os campos abaixo para cadastrar um produto.</p>
+
+<div class="card">
+  <form method="POST" action="/produtos">
+
+    <div class="form-group">
+      <label for="nome">Nome do produto</label>
+      <input
+        type="text"
+        id="nome"
+        name="nome"
+        placeholder="Ex: Tênis de corrida"
+        value="<%= locals.dadosAnteriores?.nome || '' %>"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="preco">Preço (R$)</label>
+      <input
+        type="number"
+        id="preco"
+        name="preco"
+        step="0.01"
+        min="0.01"
+        placeholder="Ex: 149.90"
+        value="<%= locals.dadosAnteriores?.preco || '' %>"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="categoria">Categoria</label>
+      <select id="categoria" name="categoria" required>
+        <option value="">Selecione...</option>
+        <% ['Calçados', 'Eletrônicos', 'Vestuário', 'Alimentos', 'Livros', 'Outros'].forEach(cat => { %>
+          <option value="<%= cat %>"
+            <%= locals.dadosAnteriores?.categoria === cat ? 'selected' : '' %>>
+            <%= cat %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <button type="submit" class="btn-submit">Cadastrar Produto</button>
+  </form>
+
+  <a href="/produtos" class="btn-voltar">← Voltar para a listagem</a>
+</div>
